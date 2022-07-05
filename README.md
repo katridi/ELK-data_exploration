@@ -1,8 +1,8 @@
-# To download docker image
+# To download docker image from [here](https://opensearch.org/docs/latest/opensearch/install/docker/#run-the-image)
 docker-compose up -d
 
 
-# To make a ensure everithing is done correctly
+# To ensure everithing is done correctly
 
 curl -XGET https://localhost:9200 -u 'admin:admin' --insecure
 
@@ -48,11 +48,56 @@ GET opensearch_dashboards_sample_data_ecommerce/_search
 }
 ```
 
-
 - What is the busiest day for women buying products cheaper than 75$
 - How many products were bought in the last 3 days from Great Britain?
+
+``` console
+GET opensearch_dashboards_sample_data_ecommerce/_search
+{
+  "size": 0,
+  "query": { 
+    "bool": { 
+      "filter": [ 
+        {"term": {"geoip.country_iso_code": "GB"}},
+        {"range": {"order_date": {"gte": "now-3d/d","lt": "now/d"}}}
+      ]
+    }
+  },
+  "aggs": {"products_sum": { "sum": { "field": "products.quantity" } }
+}
+}
+```
+
 - Standard deviation visualisation of the price with ability to filter by country
 
+![](./screenshoots/std_of_product_price_by_category.png)
+
+``` console
+GET opensearch_dashboards_sample_data_ecommerce/_search
+{
+  "size": 0,
+  "query": { 
+    "bool": { 
+      "filter": [ 
+        {"term": {"geoip.country_iso_code": "GB"}}
+      ]
+    }
+  },
+  "aggs": {
+    "products_avg": {
+      "terms": {"field": "category.keyword"},
+      "aggs": {
+      "type_agg": {
+        "terms": {"field": "type"},          
+        "aggs" : {
+          "avg_price" : { "avg" : { "field" : "products.price" } }
+         }
+        }
+       }
+      }
+    }
+}
+```
 
 ## Data analytics task (Flights data)
 
