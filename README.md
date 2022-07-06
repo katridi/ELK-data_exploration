@@ -48,7 +48,33 @@ GET opensearch_dashboards_sample_data_ecommerce/_search
 }
 ```
 
-- # What is the busiest day (most orders) for women buying products cheaper than 75$
+- What is the busiest day (most orders) for women buying products cheaper than 75$
+
+```
+GET opensearch_dashboards_sample_data_ecommerce/_search
+{
+  "size": 0,
+  "query": { 
+    "bool": { 
+      "filter": [ 
+        {"term": { "customer_gender": "FEMALE"}},
+        {"range": {"products.price": {"lte" : 75 }}}
+      ]
+    }
+  },
+  "aggs": {
+    "most_busy_dow": {
+      "terms": {
+        "field": "day_of_week",
+        "size": 1,
+        "order": { "_count": "desc" }
+        }
+      }
+    }
+}
+```
+
+
 - How many products were bought in the last 3 days from Great Britain?
 
 ``` console
