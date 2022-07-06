@@ -48,7 +48,7 @@ GET opensearch_dashboards_sample_data_ecommerce/_search
 }
 ```
 
-- # What is the busiest day for women buying products cheaper than 75$
+- # What is the busiest day (most orders) for women buying products cheaper than 75$
 - How many products were bought in the last 3 days from Great Britain?
 
 ``` console
@@ -156,5 +156,76 @@ GET opensearch_dashboards_sample_data_flights/_search
 ## Data analytics task (Logs data)
 
 - Top 5 tags in logs in which contains request to deliver css files
+
+``` console
+GET opensearch_dashboards_sample_data_logs/_search
+{
+  "size": 0,
+  "query": { 
+    "bool": { 
+      "filter": [ 
+        {"term": { "extension": "css"}}
+      ]
+    }
+  },
+  "aggs": {
+    "top_tags": {
+      "terms": {
+        "field": "tags.keyword",
+        "size": 5,
+        "order": { "_count": "desc" }
+      },
+      "aggs": {}
+    }}
+}
+```
+
 - What is sum of all RAM for Windows machines that have requests from 6am to 12pm
+
+``` console
+GET opensearch_dashboards_sample_data_logs/_search
+{
+  "size": 0,
+  "query": { 
+    "bool": { 
+      "filter": [ 
+        {"prefix": {"machine.os": {"value": "win"}}},
+        {
+              "script": {
+                "script": {
+                  "source": "doc['@timestamp'].value.hourOfDay >= params.min && doc['@timestamp'].value.hourOfDay <= params.max",
+                  "params": {
+                    "min": 6,
+                    "max": 24
+                  }
+                }
+              }
+            }
+      ]
+  }},
+  "aggs": {
+    "total_ram": { "sum": {
+      "field": "machine.ram",
+      "script": { "source": "_value/(1024)/(1024)" }
+    }
+    }
+  }
+}
+```
+
+
 - Find total number of logs with IP in range from 176.0.0.0 to 179.255.255.254
+
+``` console
+GET opensearch_dashboards_sample_data_logs/_count
+{
+  "query": {
+    "range": {
+      "clientip": {
+        "gte": "176.0.0.0",
+        "lt": "179.255.255.254"
+      }
+    }
+  }
+}
+```
