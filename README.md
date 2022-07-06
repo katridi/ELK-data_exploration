@@ -48,7 +48,7 @@ GET opensearch_dashboards_sample_data_ecommerce/_search
 }
 ```
 
-- What is the busiest day for women buying products cheaper than 75$
+- # What is the busiest day for women buying products cheaper than 75$
 - How many products were bought in the last 3 days from Great Britain?
 
 ``` console
@@ -102,9 +102,56 @@ GET opensearch_dashboards_sample_data_ecommerce/_search
 ## Data analytics task (Flights data)
 
 - Total distance in miles travelled by all flights
+
+``` console
+GET opensearch_dashboards_sample_data_flights/_search
+{
+  "size": 0,
+  "aggs": {"total_distance": { "sum": { "field": "DistanceMiles" } }}
+}
+```
+
 - Median price of the flight from Japan, US and Italy
+
+``` console
+GET opensearch_dashboards_sample_data_flights/_search
+{
+  "query": { 
+        "terms" : { "OriginCountry" : ["IT", "US", "JP"]}
+  },
+  "aggs": {
+    "median_distance": {
+      "percentiles": {
+        "field": "AvgTicketPrice",
+        "percents": [50]
+    }}
+  }
+}
+```
+
 - Top-10 most delayed destination airports
+
+``` console
+GET opensearch_dashboards_sample_data_flights/_search
+{
+  "size": 0,
+  "aggs" : {
+    "dest": {
+      "terms": {
+        "field": "DestAirportID",
+        "size": 10,
+        "order": { "max_delay_sum": "desc" }
+      },
+      "aggs": {"max_delay_sum" : { "sum" : { "field" : "FlightDelayMin" } }
+    }
+  }}
+}
+```
+
 - Geo map visualisation based on the number of flights from and to the airport
+
+![](./screenshoots/geo_flights_origin.png)
+![](./screenshoots/geo_flights_dest.png)
 
 ## Data analytics task (Logs data)
 
